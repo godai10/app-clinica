@@ -61,7 +61,7 @@ export default function LoginScreen({ navigation }) {
   // LOGIN
   // ================================
 
-  function handleLogin() {
+  async function handleLogin() {
 
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -88,6 +88,42 @@ export default function LoginScreen({ navigation }) {
     // const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
 
     navigation.replace('Main');
+  }
+
+  // ================================
+  // ESQUECI A SENHA (Abaixo do Login)
+  // ================================
+
+  async function handleForgotPassword() {
+    // Função para rodar o card de 'Esqueceu sua senha?'
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email) {
+      setErro('Por favor, digite seu e-mail para recuperar a senha.');
+      return;
+    }
+
+    if (!emailValido.test(email)) {
+      setErro('Digite um e-mail válido para a recuperação');
+      return;
+    }
+
+    setErro('');
+
+    try {
+      // Exemplo de integração real:
+      // const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+      alert('Se o e-mail estiver cadastrado, um link de recuperação será enviado.');
+
+      // Voltar para a visualização do login
+      // setIsForgotMode(false);
+
+    } catch (err) {
+      setErro('Erro ao tentar processar a solicitação.');
+    }
+
+    navigation.navigate('ForgotScreen');
   }
 
   return (
@@ -205,12 +241,13 @@ export default function LoginScreen({ navigation }) {
 
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.forgotPass}>
-
+        <TouchableOpacity 
+        style={styles.forgotPass}
+        onPress={handleForgotPassword} 
+        >
           <Text style={styles.forgotPassText}>
             Esqueceu sua senha?
           </Text>
-
         </TouchableOpacity>
 
       </View>
