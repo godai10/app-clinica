@@ -7,6 +7,7 @@ import { Text } from 'react-native';
 import LoginScreen    from '../screens/loginscreen';
 import HomeScreen     from '../screens/homescreen';
 import AgendamentoScreen from '../screens/agendamento';
+import ForgotScreen from '../screens/forgotscreen';
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
@@ -73,10 +74,25 @@ function MainTabs() {
 export default function AppRoutes() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Login">
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Main"  component={MainTabs} />
-      </Stack.Navigator>
+<Stack.Navigator
+  screenOptions={{ headerShown: false }}
+  initialRouteName="Login"
+>
+  <Stack.Screen
+    name="Login"
+    component={LoginScreen}
+  />
+
+  <Stack.Screen
+    name="ForgotScreen"
+    component={ForgotScreen}
+  />
+
+  <Stack.Screen
+    name="Main"
+    component={MainTabs}
+  />
+</Stack.Navigator>
     </NavigationContainer>
   );
 }

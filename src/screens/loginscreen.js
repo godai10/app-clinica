@@ -10,20 +10,20 @@ import {
 } from 'react-native';
 
 export default function LoginScreen({ navigation }) {
+
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [erro, setErro]   = useState('');
+  const [erro, setErro] = useState('');
 
   // Avisos individuais sobre as validações
   const [avisoEmail, setAvisoEmail] = useState('');
   const [avisoSenha, setAvisoSenha] = useState('');
 
-  
   // ================================
   // VALIDACAO DO EMAIL
   // ================================
 
-  function validarEmail(text) {  
+  function validarEmail(text) {
 
     // Regex para verificar se existe algo antes e depois do @
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,7 +33,7 @@ export default function LoginScreen({ navigation }) {
       setAvisoEmail('');
     }
     else if (!emailValido.test(text)) {
-      setAvisoEmail('Formato de e-mail invalido');
+      setAvisoEmail('Formato de e-mail inválido');
     }
     else {
       setAvisoEmail('');
@@ -84,45 +84,24 @@ export default function LoginScreen({ navigation }) {
 
     setErro('');
 
-    // Substituir por autenticação real com Supabase:
-    // const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    // ================================
+    // LOGIN REAL (SUPABASE)
+    // ================================
+
+    // const { data, error } =
+    // await supabase.auth.signInWithPassword({
+    //   email,
+    //   password: senha,
+    // });
 
     navigation.replace('Main');
   }
 
   // ================================
-  // ESQUECI A SENHA (Abaixo do Login)
+  // ESQUECI A SENHA
   // ================================
 
   async function handleForgotPassword() {
-    // Função para rodar o card de 'Esqueceu sua senha?'
-    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!email) {
-      setErro('Por favor, digite seu e-mail para recuperar a senha.');
-      return;
-    }
-
-    if (!emailValido.test(email)) {
-      setErro('Digite um e-mail válido para a recuperação');
-      return;
-    }
-
-    setErro('');
-
-    try {
-      // Exemplo de integração real:
-      // const { error } = await supabase.auth.resetPasswordForEmail(email);
-
-      alert('Se o e-mail estiver cadastrado, um link de recuperação será enviado.');
-
-      // Voltar para a visualização do login
-      // setIsForgotMode(false);
-
-    } catch (err) {
-      setErro('Erro ao tentar processar a solicitação.');
-    }
-
     navigation.navigate('ForgotScreen');
   }
 
@@ -148,7 +127,7 @@ export default function LoginScreen({ navigation }) {
 
         {/* ================================
             Campos EMAIL
-            ============================= */}
+        ================================= */}
 
         <View style={styles.inputArea}>
 
@@ -180,8 +159,8 @@ export default function LoginScreen({ navigation }) {
 
           {
             avisoEmail
-            ? <Text style={styles.aviso}>{avisoEmail}</Text>
-            : null
+              ? <Text style={styles.aviso}>{avisoEmail}</Text>
+              : null
           }
 
           {/* ================================
@@ -214,8 +193,8 @@ export default function LoginScreen({ navigation }) {
 
           {
             avisoSenha
-            ? <Text style={styles.aviso}>{avisoSenha}</Text>
-            : null
+              ? <Text style={styles.aviso}>{avisoSenha}</Text>
+              : null
           }
 
         </View>
@@ -224,8 +203,8 @@ export default function LoginScreen({ navigation }) {
 
         {
           erro
-          ? <Text style={styles.erro}>{erro}</Text>
-          : null
+            ? <Text style={styles.erro}>{erro}</Text>
+            : null
         }
 
         {/* Botão */}
@@ -241,9 +220,13 @@ export default function LoginScreen({ navigation }) {
 
         </TouchableOpacity>
 
-        <TouchableOpacity 
-        style={styles.forgotPass}
-        onPress={handleForgotPassword} 
+        {/* ================================
+            ESQUECI A SENHA
+        ================================= */}
+
+        <TouchableOpacity
+          style={styles.forgotPass}
+          onPress={handleForgotPassword}
         >
           <Text style={styles.forgotPassText}>
             Esqueceu sua senha?
