@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -110,6 +110,61 @@ function StatusBadge({ status }) {
   );
 }
 
+// ─── Relógio Brasília ────────────────────────────────────────────────────────
+
+function RelogioBrasilia() {
+  const [horario, setHorario] = useState("");
+  const [dataAtual, setDataAtual] = useState("");
+
+  useEffect(() => {
+    function atualizarHorario() {
+      const data = new Date();
+
+      const horaBrasilia = data.toLocaleTimeString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+
+      setHorario(horaBrasilia);
+
+      const dataFormatada = data.toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+
+      setDataAtual(dataFormatada);
+    }
+
+    atualizarHorario();
+
+    const intervalo = setInterval(atualizarHorario, 1000);
+
+    return () => clearInterval(intervalo);
+
+  }, []);
+
+  return (
+    <View style={styles.relogioContainer}>
+      <Text style={styles.relogioTitulo}>
+        Horário de Brasília
+      </Text>
+
+      <Text style={styles.relogioHora}>
+        🕒 {horario}
+      </Text>
+
+      <Text style={styles.relogioData}>
+        📅 {dataAtual}
+      </Text>
+    </View>
+  );
+}
+
 // ─── Header ──────────────────────────────────────────────────────────────────
 
 function Header({ user, next }) {
@@ -132,6 +187,8 @@ function Header({ user, next }) {
           <View style={styles.onlineDot} />
         </View>
       </View>
+
+      <RelogioBrasilia />
 
       {next && (
         <View style={styles.nextCard}>
@@ -559,4 +616,25 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#6b7280",
   },
+  relogioContainer: {
+  marginBottom: 14,
+  },
+  relogioTitulo: {
+  fontSize: 10,
+  color: "rgba(255,255,255,0.6)",
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  },
+  relogioHora: {
+  fontSize: 18,
+  fontWeight: "600",
+  color: "#fff",
+  marginTop: 2,
+},
+  relogioData: {
+  fontSize: 11,
+  color: "rgba(255,255,255,0.75)",
+  marginTop: 4,
+  textTransform: "capitalize",
+},
 });
