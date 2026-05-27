@@ -4,15 +4,18 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 
-import LoginScreen    from '../screens/loginscreen';
-import HomeScreen     from '../screens/homescreen';
+import LoginScreen       from '../screens/loginscreen';
+import HomeScreen        from '../screens/homescreen';
 import AgendamentoScreen from '../screens/agendamento';
-import ForgotScreen from '../screens/forgotscreen';
+import ForgotScreen      from '../screens/forgotscreen';
+import SessoesScreen     from '../screens/sessoesscreen';
+import PerfilScreen      from '../screens/perfilscreen';
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
 
-// ─── Tabs principais após login ───────────────────────────────────────────────
+// ─── Tabs principais ──────────────────────────────────────────────────────────
+
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -39,7 +42,7 @@ function MainTabs() {
         component={HomeScreen}
         options={{
           tabBarLabel: 'Início',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🏠</Text>,
+          tabBarIcon: () => <Text style={{ fontSize: 20 }}>🏠</Text>,
         }}
       />
       <Tab.Screen
@@ -47,23 +50,23 @@ function MainTabs() {
         component={AgendamentoScreen}
         options={{
           tabBarLabel: 'Agendar',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📅</Text>,
+          tabBarIcon: () => <Text style={{ fontSize: 20 }}>📅</Text>,
         }}
       />
       <Tab.Screen
-        name="Diario"
-        component={HomeScreen} // substituir por DiarioScreen quando criar
+        name="Sessoes"
+        component={SessoesScreen}
         options={{
-          tabBarLabel: 'Diário',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📓</Text>,
+          tabBarLabel: 'Sessões',
+          tabBarIcon: () => <Text style={{ fontSize: 20 }}>🧠</Text>,
         }}
       />
       <Tab.Screen
         name="Perfil"
-        component={HomeScreen} // substituir por PerfilScreen quando criar
+        component={PerfilScreen}
         options={{
           tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>👤</Text>,
+          tabBarIcon: () => <Text style={{ fontSize: 20 }}>👤</Text>,
         }}
       />
     </Tab.Navigator>
@@ -71,28 +74,18 @@ function MainTabs() {
 }
 
 // ─── Stack raiz ───────────────────────────────────────────────────────────────
+
 export default function AppRoutes() {
   return (
     <NavigationContainer>
-<Stack.Navigator
-  screenOptions={{ headerShown: false }}
-  initialRouteName="Login"
->
-  <Stack.Screen
-    name="Login"
-    component={LoginScreen}
-  />
-
-  <Stack.Screen
-    name="ForgotScreen"
-    component={ForgotScreen}
-  />
-
-  <Stack.Screen
-    name="Main"
-    component={MainTabs}
-  />
-</Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName="Login"
+      >
+        <Stack.Screen name="Login"        component={LoginScreen} />
+        <Stack.Screen name="ForgotScreen" component={ForgotScreen} />
+        <Stack.Screen name="Main"         component={MainTabs} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

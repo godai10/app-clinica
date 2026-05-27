@@ -57,11 +57,10 @@ const APPOINTMENTS = [
   },
 ];
 
+// Apenas Agendar e Sessões
 const RECURSOS = [
-  { id: "agendar",  label: "Agendar",       icon: "📅", color: "#EEEDFE" },
-  { id: "sessoes",  label: "Minhas sessões", icon: "🧠", color: "#E1F5EE" },
-  { id: "diario",   label: "Diário",         icon: "📓", color: "#FAEEDA" },
-  { id: "recursos", label: "Recursos",       icon: "💆", color: "#FBEAF0" },
+  { id: "Agendamento", label: "Agendar",       icon: "📅", color: "#EEEDFE" },
+  { id: "Sessoes",     label: "Minhas sessões", icon: "🧠", color: "#E1F5EE" },
 ];
 
 const DICA_DIA = {
@@ -226,12 +225,12 @@ function DicaDia({ dica }) {
 
 // ─── Sessões recentes ─────────────────────────────────────────────────────────
 
-function SessoesList({ sessoes, onPress }) {
+function SessoesList({ sessoes, onVerTodas, onPress }) {
   return (
     <View>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Minhas sessões</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onVerTodas}>
           <Text style={styles.linkBtn}>Ver todas</Text>
         </TouchableOpacity>
       </View>
@@ -258,43 +257,12 @@ function SessoesList({ sessoes, onPress }) {
   );
 }
 
-// ─── Bottom Nav ───────────────────────────────────────────────────────────────
-
-function BottomNav({ active, onChange }) {
-  const tabs = [
-    { id: "home",    label: "Início",  icon: "🏠" },
-    { id: "agendar", label: "Agendar", icon: "📅" },
-    { id: "diario",  label: "Diário",  icon: "📓" },
-    { id: "perfil",  label: "Perfil",  icon: "👤" },
-  ];
-
-  return (
-    <View style={styles.bottomNav}>
-      {tabs.map((t) => (
-        <TouchableOpacity
-          key={t.id}
-          onPress={() => onChange && onChange(t.id)}
-          style={styles.tabBtn}
-        >
-          <Text style={styles.tabIcon}>{t.icon}</Text>
-          <Text
-            style={[
-              styles.tabLabel,
-              { color: active === t.id ? "#4A3F8F" : "#9ca3af" },
-            ]}
-          >
-            {t.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-}
-
 // ─── HomeScreen principal ─────────────────────────────────────────────────────
 
 export default function HomeScreen({ navigation }) {
-  const [activeTab, setActiveTab] = useState("home");
+  function navegarPara(tabName) {
+    navigation.navigate(tabName);
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -308,7 +276,11 @@ export default function HomeScreen({ navigation }) {
         {/* Ações rápidas */}
         <View style={styles.recursosGrid}>
           {RECURSOS.map((r) => (
-            <TouchableOpacity key={r.id} style={styles.recursoBtn}>
+            <TouchableOpacity
+              key={r.id}
+              style={styles.recursoBtn}
+              onPress={() => navegarPara(r.id)}
+            >
               <View style={[styles.recursoIcon, { backgroundColor: r.color }]}>
                 <Text style={styles.recursoEmoji}>{r.icon}</Text>
               </View>
@@ -321,20 +293,11 @@ export default function HomeScreen({ navigation }) {
         <DicaDia dica={DICA_DIA} />
         <SessoesList
           sessoes={APPOINTMENTS}
-          onPress={(s) => {
-            // navigation.navigate('SessaoDetalhe', { id: s.id })
-          }}
+          onVerTodas={() => navegarPara("Sessoes")}
+          onPress={(s) => navigation.navigate("SessaoDetalhe", { sessao: s })}
         />
         <View style={{ height: 16 }} />
       </ScrollView>
-
-      <BottomNav
-        active={activeTab}
-        onChange={(tab) => {
-          setActiveTab(tab);
-          // navigation.navigate(tab)
-        }}
-      />
     </SafeAreaView>
   );
 }
@@ -346,8 +309,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f9fafb",
   },
-
-  // Avatar
   avatar: {
     alignItems: "center",
     justifyContent: "center",
@@ -355,8 +316,6 @@ const styles = StyleSheet.create({
   avatarText: {
     fontWeight: "600",
   },
-
-  // Badge
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -367,8 +326,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "500",
   },
-
-  // Header
   header: {
     backgroundColor: "#4A3F8F",
     paddingHorizontal: 16,
@@ -455,14 +412,10 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginTop: 2,
   },
-
-  // Scroll
   scrollContent: {
     padding: 16,
     gap: 14,
   },
-
-  // Recursos
   recursosGrid: {
     flexDirection: "row",
     gap: 8,
@@ -494,8 +447,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 14,
   },
-
-  // Card genérico
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -514,8 +465,6 @@ const styles = StyleSheet.create({
     color: "#9ca3af",
     marginBottom: 12,
   },
-
-  // Humor
   humorRow: {
     flexDirection: "row",
     gap: 8,
@@ -544,8 +493,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "center",
   },
-
-  // Dica
   dicaCard: {
     backgroundColor: "#EEEDFE",
     borderRadius: 12,
@@ -572,8 +519,6 @@ const styles = StyleSheet.create({
     color: "#534AB7",
     lineHeight: 18,
   },
-
-  // Sessões
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -613,29 +558,5 @@ const styles = StyleSheet.create({
   sessaoDate: {
     fontSize: 11,
     color: "#6b7280",
-  },
-
-  // Bottom Nav
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingTop: 10,
-    paddingBottom: 14,
-    borderTopWidth: 0.5,
-    borderTopColor: "#e5e7eb",
-    backgroundColor: "#fff",
-  },
-  tabBtn: {
-    alignItems: "center",
-    gap: 3,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
-  },
-  tabIcon: {
-    fontSize: 20,
-  },
-  tabLabel: {
-    fontSize: 9,
-    fontWeight: "500",
   },
 });
