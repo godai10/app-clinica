@@ -4,12 +4,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 
-import LoginScreen       from '../screens/loginscreen';
-import HomeScreen        from '../screens/homescreen';
-import AgendamentoScreen from '../screens/agendamento';
-import ForgotScreen      from '../screens/forgotscreen';
-import SessoesScreen     from '../screens/sessoesscreen';
-import PerfilScreen      from '../screens/perfilscreen';
+import LoginScreen        from '../screens/loginscreen';
+import HomeScreen         from '../screens/homescreen';
+import AgendamentoScreen  from '../screens/agendamento';
+import ForgotScreen       from '../screens/forgotscreen';
+import SessoesScreen      from '../screens/sessoesscreen';
+import PerfilScreen       from '../screens/perfilscreen';
+import ChatScreen from '../screens/chatscreen';
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
@@ -59,6 +60,14 @@ function MainTabs() {
         options={{
           tabBarLabel: 'Sessões',
           tabBarIcon: () => <Text style={{ fontSize: 20 }}>🧠</Text>,
+        }}
+      />
+      <Tab.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{
+          tabBarLabel: 'Chat',
+          tabBarIcon: () => <Text style={{ fontSize: 20 }}>💬</Text>,
         }}
       />
       <Tab.Screen
