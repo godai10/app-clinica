@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   StyleSheet,
   SafeAreaView,
 } from "react-native";
@@ -167,7 +168,8 @@ function RelogioBrasilia() {
 
 // ─── Header ──────────────────────────────────────────────────────────────────
 
-function Header({ user, next }) {
+function Header({ user, next, navigation }) {
+  const [hovered, setHovered] = useState(null);
   return (
     <View style={styles.header}>
       <View style={styles.headerTop}>
@@ -177,6 +179,7 @@ function Header({ user, next }) {
             {user.name.split(" ")[0]} 🌸
           </Text>
         </View>
+
         <View>
           <Avatar
             initials={user.initials}
@@ -190,20 +193,60 @@ function Header({ user, next }) {
 
       <RelogioBrasilia />
 
+      <View style={styles.headerActions}>
+        {RECURSOS.map((r) => (
+          <Pressable
+            key={r.id}
+            onPress={() => navigation.navigate(r.id)}
+            onHoverIn={() => setHovered(r.id)}
+            onHoverOut={() => setHovered(null)}
+            style={({ pressed }) => [
+            styles.headerActionBtn,
+            hovered === r.id &&
+              styles.headerActionBtnHover,         
+            pressed && 
+              styles.headerActionBtnPressed,
+          ]}
+          >
+          
+            <Text style={styles.headerActionIcon}>
+              {r.icon}
+            </Text>
+
+            <Text style={styles.headerActionText}>
+              {r.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
       {next && (
         <View style={styles.nextCard}>
           <Text style={styles.nextLabel}>Próxima sessão</Text>
+
           <View style={styles.nextRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.nextPsicologa}>{next.psicologa}</Text>
+              <Text style={styles.nextPsicologa}>
+                {next.psicologa}
+              </Text>
+
               <Text style={styles.nextTipo}>
                 {next.tipo} · {next.time}
               </Text>
-              <Text style={styles.nextModalidade}>📍 {next.modalidade}</Text>
+
+              <Text style={styles.nextModalidade}>
+                📍 {next.modalidade}
+              </Text>
             </View>
+
             <View style={styles.nextDateBox}>
-              <Text style={styles.nextDay}>{next.day}</Text>
-              <Text style={styles.nextMonth}>{next.month}</Text>
+              <Text style={styles.nextDay}>
+                {next.day}
+              </Text>
+
+              <Text style={styles.nextMonth}>
+                {next.month}
+              </Text>
             </View>
           </View>
         </View>
@@ -323,28 +366,17 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header user={USER} next={NEXT_APPOINTMENT} />
+      <Header     
+      user={USER}
+      next={NEXT_APPOINTMENT}
+      navigation={navigation}
+      />
 
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Ações rápidas */}
-        <View style={styles.recursosGrid}>
-          {RECURSOS.map((r) => (
-            <TouchableOpacity
-              key={r.id}
-              style={styles.recursoBtn}
-              onPress={() => navegarPara(r.id)}
-            >
-              <View style={[styles.recursoIcon, { backgroundColor: r.color }]}>
-                <Text style={styles.recursoEmoji}>{r.icon}</Text>
-              </View>
-              <Text style={styles.recursoLabel}>{r.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
 
         <HumorDia />
         <DicaDia dica={DICA_DIA} />
@@ -393,7 +425,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   headerGreeting: {
     fontSize: 12,
@@ -626,7 +658,7 @@ const styles = StyleSheet.create({
   letterSpacing: 0.5,
   },
   relogioHora: {
-  fontSize: 18,
+  fontSize: 16,
   fontWeight: "600",
   color: "#fff",
   marginTop: 2,
@@ -636,5 +668,48 @@ const styles = StyleSheet.create({
   color: "rgba(255,255,255,0.75)",
   marginTop: 4,
   textTransform: "capitalize",
+},
+headerActions: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  gap: 10,
+  marginBottom: 14,
+},
+
+headerActionBtn: {
+  flex: 1,
+
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+
+  paddingVertical: 12,
+
+  backgroundColor: "rgba(255,255,255,0.12)",
+
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.18)",
+
+  borderRadius: 14,
+},
+headerActionIcon: {
+  fontSize: 18,
+  marginRight: 8,
+},
+headerActionText: {
+  color: "#FFFFFF",
+  fontSize: 13,
+  fontWeight: "600",
+},
+headerActionBtnHover: {
+  backgroundColor: "rgba(255,255,255,0.20)",
+},
+headerActionBtnPressed: {
+  backgroundColor: "rgba(255,255,255,0.25)",
+
+  transform: [
+    { scaleX: 1.02 },
+    { scaleY: 1.02 },
+  ],
 },
 });
