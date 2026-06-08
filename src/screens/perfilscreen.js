@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
+import { supabase } from "../services/supabase";
 import {
   View,
   Text,
@@ -13,14 +15,6 @@ import {
 
 // ─── Dados fictícios ──────────────────────────────────────────────────────────
 
-const USUARIO = {
-  name: "Mariana Costa",
-  initials: "MC",
-  email: "mariana.costa@email.com",
-  telefone: "(11) 98765-4321",
-  dataNascimento: "12/03/1995",
-  plano: "Plano Mensal",
-};
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
 
@@ -177,16 +171,19 @@ function TrocarSenhaModal({ onFechar }) {
 // ─── PerfilScreen principal ───────────────────────────────────────────────────
 
 export default function PerfilScreen({ navigation }) {
-  const [usuario, setUsuario] = useState(USUARIO);
+  const usuario = global.usuarioLogado;
   const [notifSessoes, setNotifSessoes] = useState(true);
   const [notifLembretes, setNotifLembretes] = useState(true);
 
   const [modalEditar, setModalEditar] = useState(null); // { campo, valor }
   const [modalSenha, setModalSenha] = useState(false);
 
+
   function handleEditar(campo, valor) {
     setModalEditar({ campo, valor });
   }
+
+  
 
   function handleSalvar(novoValor) {
     const chave = modalEditar.campo === "Nome" ? "name"
@@ -212,17 +209,31 @@ export default function PerfilScreen({ navigation }) {
     );
   }
 
+  if (!usuario) {
+  return null;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
 
         {/* Header roxo com avatar */}
         <View style={styles.header}>
-          <Avatar initials={usuario.initials} />
-          <Text style={styles.headerNome}>{usuario.name}</Text>
+          <Avatar
+  initials={
+    usuario.nome
+      ?.split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+  }
+/>
+          <Text style={styles.headerNome}>{usuario.nome}</Text>
           <Text style={styles.headerEmail}>{usuario.email}</Text>
           <View style={styles.planoBadge}>
-            <Text style={styles.planoText}>⭐ {usuario.plano}</Text>
+            <Text style={styles.planoText}>
+  ⭐ Paciente
+</Text>
           </View>
         </View>
 
@@ -231,19 +242,31 @@ export default function PerfilScreen({ navigation }) {
           {/* ── Dados pessoais ── */}
           <SectionTitle title="Dados pessoais" />
           <View style={styles.card}>
-            <InfoRow icon="👤" label="Nome completo"    value={usuario.name} />
+            <InfoRow
+  icon="👤"
+  label="Nome completo"
+  value={usuario.nome}
+/>
             <View style={styles.divider} />
             <InfoRow icon="✉️"  label="E-mail"           value={usuario.email} />
             <View style={styles.divider} />
-            <InfoRow icon="📱" label="Telefone"          value={usuario.telefone} />
+            <InfoRow
+  icon="📱"
+  label="Telefone"
+  value="Não informado"
+/>
             <View style={styles.divider} />
-            <InfoRow icon="🎂" label="Data de nascimento" value={usuario.dataNascimento} />
+            <InfoRow
+  icon="🎂"
+  label="Data de nascimento"
+  value="Não informado"
+/>
           </View>
 
           {/* ── Editar informações ── */}
           <SectionTitle title="Editar informações" />
           <View style={styles.card}>
-            <MenuBtn icon="✏️" label="Editar nome"     onPress={() => handleEditar("Nome", usuario.name)} />
+            <MenuBtn icon="✏️" label="Editar nome"     onPress={() => handleEditar("Nome", usuario.nome)} />
             <View style={styles.divider} />
             <MenuBtn icon="📱" label="Editar telefone" onPress={() => handleEditar("Telefone", usuario.telefone)} />
             <View style={styles.divider} />

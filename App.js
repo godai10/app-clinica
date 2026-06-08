@@ -1,5 +1,4 @@
-import React from 'react';
-import AppRoutes from './src/navigation/approutes';
+import AppRoutes from "./src/navigation/approutes.js";
 
 export default function App() {
   return <AppRoutes />;

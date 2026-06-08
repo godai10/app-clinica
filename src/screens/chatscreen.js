@@ -54,12 +54,26 @@ const RESPOSTAS = {
 };
 
 const SUGESTOES = [
-  { id: 1, texto: "Estou ansioso(a)" },
-  { id: 2, texto: "Estou me sentindo triste" },
-  { id: 3, texto: "Muito estressado(a)" },
-  { id: 4, texto: "Tenho dificuldade para dormir" },
-  { id: 5, texto: "Problemas no relacionamento" },
-  { id: 6, texto: "Quero agendar uma sessão" },
+  {
+    id: 1,
+    texto: "Estou ansioso"
+  },
+  {
+    id: 2,
+    texto: "Estou triste"
+  },
+  {
+    id: 3,
+    texto: "Não consigo dormir"
+  },
+  {
+    id: 4,
+    texto: "Estou estressado"
+  },
+  {
+    id: 5,
+    texto: "Quero marcar sessão"
+  }
 ];
 
 // ─── Lógica do chatbot ────────────────────────────────────────────────────────
@@ -105,7 +119,7 @@ function TypingIndicator() {
   return (
     <View style={styles.typingWrapper}>
       <View style={styles.avatarSmall}>
-        <Text style={styles.avatarSmallText}>RO</Text>
+        <Text style={styles.avatarSmallText}>IA</Text>
       </View>
       <View style={styles.typingBubble}>
         <Text style={styles.typingDots}>• • •</Text>
@@ -120,7 +134,7 @@ function Mensagem({ msg }) {
     <View style={[styles.msgWrapper, isUser && styles.msgWrapperUser]}>
       {!isUser && (
         <View style={styles.avatarSmall}>
-          <Text style={styles.avatarSmallText}>RO</Text>
+          <Text style={styles.avatarSmallText}>IA</Text>
         </View>
       )}
       <View
@@ -148,11 +162,10 @@ export default function ChatScreen({ navigation }) {
       id: 1,
       remetente: "bot",
       texto:
-        "Olá! Sou a assistente da Dra. Renata. Estou aqui para te apoiar entre as sessões. Como você está se sentindo hoje? 🌸",
+        "Olá! Sou a IA Anamnese. Escolha uma das opções abaixo para receber orientação inicial.",
       hora: horaAtual(),
     },
   ]);
-  const [input, setInput] = useState("");
   const [digitando, setDigitando] = useState(false);
   const scrollRef = useRef(null);
 
@@ -180,7 +193,6 @@ export default function ChatScreen({ navigation }) {
     };
 
     setMensagens((prev) => [...prev, novaMsgUser]);
-    setInput("");
     setDigitando(true);
 
     setTimeout(() => {
@@ -202,18 +214,12 @@ export default function ChatScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backBtn}
-        >
-          <Text style={styles.backIcon}>‹</Text>
-        </TouchableOpacity>
         <View style={styles.headerInfo}>
           <View style={styles.headerAvatar}>
-            <Text style={styles.headerAvatarText}>RO</Text>
+            <Text style={styles.headerAvatarText}>IA</Text>
           </View>
           <View>
-            <Text style={styles.headerNome}>Dra. Renata Oliveira</Text>
+            <Text style={styles.headerNome}>IA Anamnese</Text>
             <Text style={styles.headerStatus}>● Online agora</Text>
           </View>
         </View>
@@ -254,29 +260,6 @@ export default function ChatScreen({ navigation }) {
           ))}
         </ScrollView>
 
-        {/* Input */}
-        <View style={styles.inputBar}>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite uma mensagem..."
-            placeholderTextColor="#9ca3af"
-            value={input}
-            onChangeText={setInput}
-            multiline
-            maxLength={300}
-            onSubmitEditing={() => enviarMensagem(input)}
-          />
-          <TouchableOpacity
-            style={[
-              styles.sendBtn,
-              !input.trim() && styles.sendBtnDisabled,
-            ]}
-            onPress={() => enviarMensagem(input)}
-            disabled={!input.trim()}
-          >
-            <Text style={styles.sendIcon}>➤</Text>
-          </TouchableOpacity>
-        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

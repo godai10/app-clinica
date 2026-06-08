@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "../services/supabase";
 import {
   View,
   Text,
@@ -19,36 +20,7 @@ const TIPOS_SESSAO = [
   { id: 4, nome: "Avaliação Psicológica", icone: "📋", descricao: "Laudos e relatórios clínicos" },
 ];
 
-const PSICOLOGAS = [
-  {
-    id: 1, nome: "Dra. Renata Oliveira", crp: "CRP 06/123456",
-    abordagem: "Terapia Cognitivo-Comportamental (TCC)", tiposIds: [1, 2],
-    avaliacao: 4.9, sessoes: 830, initials: "RO", cor: "#534AB7", bg: "#EEEDFE",
-    bio: "Especialista em ansiedade, depressão e relacionamentos.",
-    modalidades: ["Presencial", "Online"],
-  },
-  {
-    id: 2, nome: "Dra. Camila Torres", crp: "CRP 06/234567",
-    abordagem: "Psicanálise", tiposIds: [1, 4],
-    avaliacao: 4.8, sessoes: 640, initials: "CT", cor: "#0F6E56", bg: "#E1F5EE",
-    bio: "Atua com autoconhecimento, traumas e avaliações psicológicas.",
-    modalidades: ["Presencial"],
-  },
-  {
-    id: 3, nome: "Dra. Beatriz Santos", crp: "CRP 06/345678",
-    abordagem: "Terapia Sistêmica", tiposIds: [2, 3],
-    avaliacao: 4.9, sessoes: 510, initials: "BS", cor: "#993556", bg: "#FBEAF0",
-    bio: "Especialista em terapia de casal e família.",
-    modalidades: ["Online", "Presencial"],
-  },
-  {
-    id: 4, nome: "Dra. Larissa Mendes", crp: "CRP 06/456789",
-    abordagem: "Gestalt-terapia", tiposIds: [1, 3],
-    avaliacao: 4.7, sessoes: 390, initials: "LM", cor: "#854F0B", bg: "#FAEEDA",
-    bio: "Foco em presença, emoções e autoconhecimento.",
-    modalidades: ["Online", "Presencial"],
-  },
-];
+
 
 const MODALIDADES = [
   { id: "presencial", label: "Presencial", icon: "🏢" },
@@ -149,33 +121,24 @@ function StepTipo({ selected, onSelect }) {
 
 // ─── STEP 2: Psicóloga ────────────────────────────────────────────────────────
 
-function StepPsicologa({ tipo, selected, modalidade, onSelect, onModalidade }) {
-  const lista = PSICOLOGAS.filter((p) => p.tiposIds.includes(tipo.id));
+function StepPsicologa({
+  tipo,
+  selected,
+  onSelect,
+  psicologas
+}) {
+  const lista = psicologas || [];
   return (
     <View>
       <Text style={styles.stepTitle}>Escolha a psicóloga</Text>
-      <Text style={styles.stepSub}>{lista.length} profissional(is) para {tipo.nome}</Text>
-
-      {/* Filtro modalidade */}
-      <View style={styles.modalidadeRow}>
-        {MODALIDADES.map((m) => (
-          <TouchableOpacity
-            key={m.id}
-            onPress={() => onModalidade(m.id)}
-            style={[styles.modalidadeBtn, modalidade === m.id && styles.modalidadeBtnAtivo]}
-          >
-            <Text style={styles.modalidadeIcon}>{m.icon}</Text>
-            <Text style={[styles.modalidadeLabel, modalidade === m.id && styles.modalidadeLabelAtivo]}>
-              {m.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <Text style={styles.stepSub}>
+        {lista.length} profissional(is) disponível(is)
+      </Text>
 
       <View style={{ gap: 10 }}>
         {lista.map((p) => {
           const sel = selected?.id === p.id;
-          const temMod = !modalidade || p.modalidades.some((m) => m.toLowerCase() === modalidade);
+          const temMod = true;
           return (
             <TouchableOpacity
               key={p.id}
@@ -184,10 +147,18 @@ function StepPsicologa({ tipo, selected, modalidade, onSelect, onModalidade }) {
               style={[styles.psicCard, sel && styles.psicCardSel, !temMod && styles.psicCardDisabled]}
             >
               <View style={styles.psicHeader}>
-                <Avatar initials={p.initials} bgColor={p.bg} textColor={p.cor} size={46} />
+                <Avatar
+  initials={
+    p.nome
+      ?.split(" ")
+      .map(n => n[0])
+      .slice(0,2)
+      .join("")
+      .toUpperCase()
+  } />
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={styles.psicNome}>{p.nome}</Text>
-                  <Text style={styles.psicCrp}>{p.crp}</Text>
+                  <Text style={styles.psicCrp}>Estagiário de Psicologia</Text>
                   <Text style={styles.psicAbordagem}>{p.abordagem}</Text>
                 </View>
                 {sel && (
@@ -196,15 +167,12 @@ function StepPsicologa({ tipo, selected, modalidade, onSelect, onModalidade }) {
                   </View>
                 )}
               </View>
-              <Text style={styles.psicBio}>{p.bio}</Text>
+              <Text style={styles.psicBio}>Atendimento supervisionado pela clínica escola.</Text>
               <View style={styles.psicFooter}>
-                <Text style={styles.psicAvaliacao}>⭐ {p.avaliacao}</Text>
-                <Text style={styles.psicSessoes}>{p.sessoes} sessões</Text>
-                {p.modalidades.map((m) => (
-                  <View key={m} style={styles.psicModBadge}>
-                    <Text style={styles.psicModText}>{m}</Text>
-                  </View>
-                ))}
+                <Text style={styles.psicAvaliacao}>Supervisor: {p.supervisor}</Text>
+                <Text style={styles.psicSessoes}>
+                  Sala: {p.sala_preferencial}
+                </Text>
               </View>
             </TouchableOpacity>
           );
@@ -328,11 +296,23 @@ function StepConfirmacao({ tipo, psicologa, dia, hora, modalidade, onConfirmar, 
       {/* Card psicóloga */}
       <View style={styles.confirmCard}>
         <View style={styles.confirmHeader}>
-          <Avatar initials={psicologa.initials} bgColor="rgba(255,255,255,0.2)" textColor="#fff" size={52} />
+          <Avatar
+  initials={
+    psicologa.nome
+      ?.split(" ")
+      .map(n => n[0])
+      .slice(0,2)
+      .join("")
+      .toUpperCase()
+  } />
           <View style={{ flex: 1, marginLeft: 14 }}>
             <Text style={styles.confirmNome}>{psicologa.nome}</Text>
-            <Text style={styles.confirmAbordagem}>{psicologa.abordagem}</Text>
-            <Text style={styles.confirmCrp}>{psicologa.crp}</Text>
+            <Text style={styles.confirmAbordagem}>
+              Supervisor: {psicologa.supervisor}
+            </Text>
+            <Text style={styles.confirmCrp}>
+              Sala: {psicologa.sala_preferencial}
+            </Text>
           </View>
         </View>
         <View style={styles.confirmRows}>
@@ -404,6 +384,10 @@ export default function AgendamentoScreen({ navigation }) {
   const [hora, setHora]             = useState(null);
   const [loading, setLoading]       = useState(false);
   const [sucesso, setSucesso]       = useState(false);
+  const [psicologasBanco, setPsicologasBanco] = useState([]);
+        useEffect(() => {
+      carregarEstagiarios();
+    }, []);
 
   const podeAvancar = () => {
     if (step === 0) return !!tipo;
@@ -415,11 +399,49 @@ export default function AgendamentoScreen({ navigation }) {
   const avancar = () => { if (podeAvancar()) setStep((s) => Math.min(s + 1, 3)); };
   const voltar  = () => { if (step > 0) setStep((s) => s - 1); };
 
-  const confirmar = () => {
-    setLoading(true);
-    // Substituir por: await supabase.from('sessoes').insert({ ... })
-    setTimeout(() => { setLoading(false); setSucesso(true); }, 1800);
-  };
+    async function carregarEstagiarios() {
+
+  const { data, error } = await supabase
+    .from("estagiarios")
+    .select("*");
+
+  if (!error) {
+    setPsicologasBanco(data || []);
+  }
+}
+
+
+const confirmar = async () => {
+
+  setLoading(true);
+
+  const { data, error } = await supabase
+    .from("agendamentos")
+    .insert([
+      {
+        paciente_id: global.usuarioLogado.paciente_id,
+        estagiario_id: psicologa.id,
+        tipo_sessao: tipo.nome,
+        data_sessao: dia.dataCompleta.split("/").reverse().join("-"),
+        horario: hora.hora,
+        sala: psicologa.sala_preferencial,
+        observacoes: ""
+      }
+    ])
+    .select();
+
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
+  if (error) {
+    alert(JSON.stringify(error));
+    setLoading(false);
+    return;
+  }
+
+  setLoading(false);
+  setSucesso(true);
+};
 
   const resetar = () => {
     setStep(0); setTipo(null); setPsicologa(null);
@@ -432,10 +454,11 @@ export default function AgendamentoScreen({ navigation }) {
     switch (step) {
       case 0: return <StepTipo selected={tipo} onSelect={(t) => { setTipo(t); setPsicologa(null); }} />;
       case 1: return (
-        <StepPsicologa
-          tipo={tipo} selected={psicologa} modalidade={modalidade}
+       <StepPsicologa
+          tipo={tipo}
+          selected={psicologa}
+          psicologas={psicologasBanco}
           onSelect={setPsicologa}
-          onModalidade={(m) => { setModalidade((p) => p === m ? null : m); setPsicologa(null); }}
         />
       );
       case 2: return <StepDataHora dia={dia} hora={hora} onDia={(d) => { setDia(d); setHora(null); }} onHora={setHora} />;
@@ -447,6 +470,7 @@ export default function AgendamentoScreen({ navigation }) {
       );
       default: return null;
     }
+
   };
 
   return (

@@ -9,6 +9,8 @@ import {
   Platform,
 } from 'react-native';
 
+import { supabase } from "../services/supabase";
+
 export default function LoginScreen({ navigation }) {
 
   const [email, setEmail] = useState('');
@@ -61,41 +63,43 @@ export default function LoginScreen({ navigation }) {
   // LOGIN
   // ================================
 
-  async function handleLogin() {
+async function handleLogin() {
 
-    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!email || !senha) {
-      setErro('Preencha e-mail e senha.');
-      return;
-    }
-
-    // BLOQUEIA EMAIL INVALIDO
-    if (!emailValido.test(email)) {
-      setErro('Digite um e-mail válido.');
-      return;
-    }
-
-    // BLOQUEIA SENHA CURTA
-    if (senha.length < 6) {
-      setErro('A senha precisa ter ao menos 6 caracteres.');
-      return;
-    }
-
-    setErro('');
-
-    // ================================
-    // LOGIN REAL (SUPABASE)
-    // ================================
-
-    // const { data, error } =
-    // await supabase.auth.signInWithPassword({
-    //   email,
-    //   password: senha,
-    // });
-
-    navigation.replace('Main');
+  if (!email || !senha) {
+    setErro('Preencha e-mail e senha.');
+    return;
   }
+
+  if (!emailValido.test(email)) {
+    setErro('Digite um e-mail válido.');
+    return;
+  }
+
+  setErro('');
+
+  const { data, error } = await supabase
+    .from("usuarios")
+    .select("*")
+    .eq("email", email)
+    .eq("senha", senha)
+    .single();
+
+  if (error || !data) {
+    setErro("E-mail ou senha inválidos.");
+    return;
+  }
+
+console.log("Usuário logado:", data);
+global.usuarioLogado = data;
+
+ if (data.tipo === "estagiario") {
+  navigation.replace("PainelAdmin");
+} else {
+  navigation.replace("Main");
+}
+}
 
   // ================================
   // ESQUECI A SENHA
@@ -230,6 +234,21 @@ export default function LoginScreen({ navigation }) {
         >
           <Text style={styles.forgotPassText}>
             Esqueceu sua senha?
+          </Text>
+        </TouchableOpacity>
+
+                <TouchableOpacity
+          onPress={() => navigation.navigate("CadastroPacientes")}
+          style={{ marginTop: 10 }}
+        >
+          <Text
+            style={{
+              color: "#4A3F8F",
+              fontWeight: "bold",
+              textAlign: "center"
+            }}
+          >
+            Criar conta
           </Text>
         </TouchableOpacity>
 

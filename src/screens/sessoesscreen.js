@@ -7,88 +7,37 @@ import {
   StyleSheet,
   SafeAreaView,
 } from "react-native";
+import { useEffect } from "react";
+import { supabase } from "../services/supabase";
 
 // ─── Dados fictícios ──────────────────────────────────────────────────────────
 
-const SESSOES = [
-  {
-    id: 1,
-    psicologa: "Dra. Renata Oliveira",
-    tipo: "Terapia Individual",
-    date: "16 Abr",
-    horario: "10:00",
-    modalidade: "Online (Google Meet)",
-    status: "done",
-    initials: "RO",
-    cor: "#534AB7",
-    bg: "#EEEDFE",
-    anotacao: "Sessão focada em técnicas de respiração e manejo da ansiedade.",
-  },
-  {
-    id: 2,
-    psicologa: "Dra. Renata Oliveira",
-    tipo: "Terapia Individual",
-    date: "23 Abr",
-    horario: "10:00",
-    modalidade: "Online (Google Meet)",
-    status: "pending",
-    initials: "RO",
-    cor: "#534AB7",
-    bg: "#EEEDFE",
-    anotacao: null,
-  },
-  {
-    id: 3,
-    psicologa: "Dra. Camila Torres",
-    tipo: "Avaliação Psicológica",
-    date: "02 Mai",
-    horario: "14:00",
-    modalidade: "Presencial",
-    status: "pending",
-    initials: "CT",
-    cor: "#0F6E56",
-    bg: "#E1F5EE",
-    anotacao: null,
-  },
-  {
-    id: 4,
-    psicologa: "Dra. Renata Oliveira",
-    tipo: "Terapia Individual",
-    date: "09 Abr",
-    horario: "10:00",
-    modalidade: "Online (Google Meet)",
-    status: "done",
-    initials: "RO",
-    cor: "#534AB7",
-    bg: "#EEEDFE",
-    anotacao: "Trabalhamos questões relacionadas ao ambiente de trabalho e limites pessoais.",
-  },
-  {
-    id: 5,
-    psicologa: "Dra. Renata Oliveira",
-    tipo: "Terapia Individual",
-    date: "02 Abr",
-    horario: "10:00",
-    modalidade: "Online (Google Meet)",
-    status: "cancelled",
-    initials: "RO",
-    cor: "#534AB7",
-    bg: "#EEEDFE",
-    anotacao: null,
-  },
-];
 
 const FILTROS = [
-  { id: "todas",     label: "Todas" },
-  { id: "pending",   label: "Agendadas" },
-  { id: "done",      label: "Realizadas" },
-  { id: "cancelled", label: "Canceladas" },
+  { id: "todas", label: "Todas" },
+  { id: "agendada", label: "Agendadas" },
+  { id: "realizada", label: "Realizadas" },
+  { id: "cancelada", label: "Canceladas" },
 ];
 
 const STATUS_MAP = {
-  done:      { label: "Realizada", bg: "#EAF3DE", color: "#3B6D11" },
-  pending:   { label: "Agendada",  bg: "#EEEDFE", color: "#534AB7" },
-  cancelled: { label: "Cancelada", bg: "#FCEBEB", color: "#A32D2D" },
+  agendada: {
+    label: "Agendada",
+    bg: "#EEEDFE",
+    color: "#534AB7",
+  },
+
+  realizada: {
+    label: "Realizada",
+    bg: "#EAF3DE",
+    color: "#3B6D11",
+  },
+
+  cancelada: {
+    label: "Cancelada",
+    bg: "#FCEBEB",
+    color: "#A32D2D",
+  },
 };
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
@@ -104,10 +53,13 @@ function Avatar({ initials, size = 44, bgColor = "#EEEDFE", textColor = "#534AB7
 }
 
 function StatusBadge({ status }) {
-  const c = STATUS_MAP[status] || STATUS_MAP.pending;
+  const c = STATUS_MAP[status] || STATUS_MAP.agendada;
+
   return (
     <View style={[styles.badge, { backgroundColor: c.bg }]}>
-      <Text style={[styles.badgeText, { color: c.color }]}>{c.label}</Text>
+      <Text style={[styles.badgeText, { color: c.color }]}>
+        {c.label}
+      </Text>
     </View>
   );
 }
@@ -158,14 +110,45 @@ function DetalheModal({ sessao, onFechar }) {
         )}
 
         {/* Ações — só para sessões agendadas */}
-        {sessao.status === "pending" && (
+        {sessao.status === "agendada" && (
           <View style={styles.modalAcoes}>
             <TouchableOpacity style={styles.btnReagendar}>
               <Text style={styles.btnReagendarText}>Reagendar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.btnCancelar}>
-              <Text style={styles.btnCancelarText}>Cancelar sessão</Text>
-            </TouchableOpacity>
+            <TouchableOpacity
+  style={styles.btnCancelar}
+onPress={async () => {
+
+  console.log("CLICOU CANCELAR");
+
+  const { data, error } = await supabase
+    .from("agendamentos")
+    .update({
+      status: "cancelada"
+    })
+    .eq("id", sessao.id)
+    .select();
+
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("Cancelada!");
+  await carregarSessoes();
+
+  carregarSessoes();
+  setSessaoSelecionada(null);
+  await carregarSessoes();
+}}
+>
+  <Text style={styles.btnCancelarText}>
+    Cancelar sessão
+  </Text>
+</TouchableOpacity>
           </View>
         )}
       </View>
@@ -196,21 +179,98 @@ function SessaoCard({ sessao, onPress }) {
 // ─── SessoesScreen principal ──────────────────────────────────────────────────
 
 export default function SessoesScreen({ navigation }) {
-  const [filtroAtivo, setFiltroAtivo] = useState("todas");
-  const [sessaoSelecionada, setSessaoSelecionada] = useState(null);
+const [filtroAtivo, setFiltroAtivo] = useState("todas");
+const [sessaoSelecionada, setSessaoSelecionada] = useState(null);
+const [sessoes, setSessoes] = useState([]);
+useEffect(() => {
+  carregarSessoes();
+}, []);
+
+async function carregarSessoes() {
+
+  const { data, error } = await supabase
+    .from("agendamentos")
+    .select(`
+      *,
+      estagiarios (
+        id,
+        nome,
+        supervisor,
+        sala_preferencial
+      )
+    `)
+    .eq("paciente_id", global.usuarioLogado.paciente_id)
+    .order("data_sessao", { ascending: false });
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  const sessoesFormatadas = (data || []).map(sessao => {
+
+    const nome = sessao.estagiarios?.nome || "Estagiário";
+
+    const iniciais = nome
+      .split(" ")
+      .map(p => p[0])
+      .slice(0, 2)
+      .join("");
+
+    return {
+      ...sessao,
+
+      psicologa: nome,
+      initials: iniciais,
+
+      bg: "#EEEDFE",
+      cor: "#534AB7",
+
+      tipo: sessao.tipo_sessao,
+
+      modalidade: sessao.sala,
+
+      date: sessao.data_sessao
+        ?.split("-")
+        .reverse()
+        .join("/"),
+
+      horario: sessao.horario,
+
+      status: sessao.status || "agendada",
+
+      anotacao: sessao.observacoes || ""
+    };
+  });
+
+  console.log(
+  "SESSOES FORMATADAS:",
+  JSON.stringify(sessoesFormatadas, null, 2)
+  );
+  setSessoes(sessoesFormatadas);
+}
 
   const sessoesFiltradas =
     filtroAtivo === "todas"
-      ? SESSOES
-      : SESSOES.filter((s) => s.status === filtroAtivo);
+      ? sessoes
+      : sessoes.filter((s) => s.status === filtroAtivo);
 
   // Contadores para cada filtro
-  const contadores = {
-    todas:     SESSOES.length,
-    pending:   SESSOES.filter((s) => s.status === "pending").length,
-    done:      SESSOES.filter((s) => s.status === "done").length,
-    cancelled: SESSOES.filter((s) => s.status === "cancelled").length,
-  };
+      const contadores = {
+        todas: sessoes.length,
+
+        agendada: sessoes.filter(
+          (s) => s.status === "agendada"
+        ).length,
+
+        realizada: sessoes.filter(
+          (s) => s.status === "realizada"
+        ).length,
+
+        cancelada: sessoes.filter(
+          (s) => s.status === "cancelada"
+        ).length,
+      };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -218,7 +278,7 @@ export default function SessoesScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitulo}>Minhas Sessões</Text>
-        <Text style={styles.headerSub}>{SESSOES.length} sessões no total</Text>
+        <Text style={styles.headerSub}>{sessoes.length} sessões no total</Text>
       </View>
 
       {/* Filtros */}

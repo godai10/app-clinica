@@ -5,11 +5,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 
 import LoginScreen        from '../screens/loginscreen';
+import CadastroPacientes from "../screens/cadastropacientes";
 import HomeScreen         from '../screens/homescreen';
 import AgendamentoScreen  from '../screens/agendamento';
 import ForgotScreen       from '../screens/forgotscreen';
 import SessoesScreen      from '../screens/sessoesscreen';
 import PerfilScreen       from '../screens/perfilscreen';
+import PainelAdmin from "../screens/paineladmin";
 import ChatScreen from '../screens/chatscreen';
 
 const Stack = createNativeStackNavigator();
@@ -94,6 +96,8 @@ export default function AppRoutes() {
         <Stack.Screen name="Login"        component={LoginScreen} />
         <Stack.Screen name="ForgotScreen" component={ForgotScreen} />
         <Stack.Screen name="Main"         component={MainTabs} />
+        <Stack.Screen name="CadastroPacientes" component={CadastroPacientes}/>
+        <Stack.Screen name="PainelAdmin"  component={PainelAdmin}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

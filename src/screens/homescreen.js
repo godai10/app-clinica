@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { supabase } from "../services/supabase";
 import {
   View,
   Text,
@@ -11,52 +12,7 @@ import {
 
 // ─── Dados fictícios ──────────────────────────────────────────────────────────
 
-const USER = {
-  name: "Mariana Costa",
-  initials: "MC",
-};
 
-const NEXT_APPOINTMENT = {
-  psicologa: "Dra. Renata Oliveira",
-  tipo: "Terapia Individual",
-  time: "10:00",
-  day: "23",
-  month: "Abr",
-  modalidade: "Online (Google Meet)",
-};
-
-const APPOINTMENTS = [
-  {
-    id: 1,
-    psicologa: "Dra. Renata Oliveira",
-    tipo: "Terapia Individual",
-    date: "16 Abr",
-    status: "done",
-    initials: "RO",
-    cor: "#534AB7",
-    bg: "#EEEDFE",
-  },
-  {
-    id: 2,
-    psicologa: "Dra. Renata Oliveira",
-    tipo: "Terapia Individual",
-    date: "23 Abr",
-    status: "pending",
-    initials: "RO",
-    cor: "#534AB7",
-    bg: "#EEEDFE",
-  },
-  {
-    id: 3,
-    psicologa: "Dra. Camila Torres",
-    tipo: "Avaliação Psicológica",
-    date: "02 Mai",
-    status: "pending",
-    initials: "CT",
-    cor: "#0F6E56",
-    bg: "#E1F5EE",
-  },
-];
 
 // Apenas Agendar e Sessões
 const RECURSOS = [
@@ -360,15 +316,104 @@ function SessoesList({ sessoes, onVerTodas, onPress }) {
 // ─── HomeScreen principal ─────────────────────────────────────────────────────
 
 export default function HomeScreen({ navigation }) {
-  function navegarPara(tabName) {
-    navigation.navigate(tabName);
+
+  const [proximaSessao, setProximaSessao] = useState(null);
+  const [sessoes, setSessoes] = useState([]);
+  async function carregarDados() {
+
+const { data, error } = await supabase
+  .from("agendamentos")
+  .select(`
+    *,
+    estagiarios (
+      nome
+    )
+  `)
+    .eq("paciente_id", global.usuarioLogado.paciente_id)
+    .order("data_sessao", { ascending: true });
+
+  if (error) {
+    console.log(error);
+    return;
   }
+
+const sessoesFormatadas = data.map(sessao => ({
+
+  id: sessao.id,
+
+  psicologa:
+    sessao.estagiarios?.nome ||
+    "Profissional",
+
+  tipo:
+    sessao.tipo_sessao,
+
+  date:
+    new Date(sessao.data_sessao)
+      .toLocaleDateString("pt-BR"),
+
+  time:
+    sessao.horario.slice(0,5),
+
+  modalidade:
+    sessao.sala,
+
+  day:
+    new Date(sessao.data_sessao)
+      .getDate(),
+
+  month:
+    new Date(sessao.data_sessao)
+      .toLocaleDateString(
+        "pt-BR",
+        { month: "short" }
+      )
+      .toUpperCase(),
+
+  status:
+    sessao.status === "agendada"
+      ? "pending"
+      : sessao.status === "cancelada"
+      ? "cancelled"
+      : "done",
+
+  initials:
+    sessao.estagiarios?.nome
+      ?.split(" ")
+      .map(n => n[0])
+      .slice(0, 2)
+      .join("") || "PS",
+
+  cor: "#534AB7",
+  bg: "#EEEDFE",
+}));
+
+setSessoes(sessoesFormatadas);
+
+const proxima = sessoesFormatadas.find(
+  s => s.status === "pending"
+);
+
+setProximaSessao(proxima);
+}
+  
+
+  useEffect(() => {
+    carregarDados();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <Header     
-      user={USER}
-      next={NEXT_APPOINTMENT}
+      user={{
+  name: global.usuarioLogado.nome,
+  initials: global.usuarioLogado.nome
+    ?.split(" ")
+    .map(n => n[0])
+    .slice(0, 2)
+    .join("")
+}}
+      next={proximaSessao}
       navigation={navigation}
       />
 
@@ -381,8 +426,8 @@ export default function HomeScreen({ navigation }) {
         <HumorDia />
         <DicaDia dica={DICA_DIA} />
         <SessoesList
-          sessoes={APPOINTMENTS}
-          onVerTodas={() => navegarPara("Sessoes")}
+          sessoes={sessoes}
+          onVerTodas={() => navigation.navigate("Sessoes")}
           onPress={(s) => navigation.navigate("SessaoDetalhe", { sessao: s })}
         />
         <View style={{ height: 16 }} />
@@ -390,6 +435,7 @@ export default function HomeScreen({ navigation }) {
     </SafeAreaView>
   );
 }
+
 
 // ─── Estilos ──────────────────────────────────────────────────────────────────
 
