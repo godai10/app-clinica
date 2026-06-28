@@ -14,7 +14,7 @@ import {
 // ─── Dados fictícios ──────────────────────────────────────────────────────────
 
 const TIPOS_SESSAO = [
-  { id: 1, nome: "Terapia Individua",    icone: "🧠", descricao: "Sessão focada em você" },
+  { id: 1, nome: "Terapia Individual",    icone: "🧠", descricao: "Sessão focada em você" },
   { id: 2, nome: "Terapia de Casal",      icone: "💑", descricao: "Para casais e relacionamentos" },
   { id: 3, nome: "Terapia Familiar",      icone: "👨‍👩‍👧", descricao: "Dinâmica e conflitos familiares" },
   { id: 4, nome: "Avaliação Psicológica", icone: "📋", descricao: "Laudos e relatórios clínicos" },
